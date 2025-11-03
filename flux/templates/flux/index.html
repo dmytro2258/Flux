@@ -289,23 +289,24 @@
             <div class="tab-content">
                 <div id="tab-1" class="tab-pane fade show p-0 active">
                     <div class="row g-4">
-
+                        {% comment %} single item {% endcomment %}
+                        {% for product in products %}
                         <div class="col-md-6 col-lg-4 col-xl-3">
                             <div class="product-item rounded wow fadeInUp" data-wow-delay="0.7s">
 
                                 <div class="product-item-inner border rounded">
 
                                     <div class="product-item-inner-item">
-                                        <img src="{% static 'flux/img/product-10.png' %}" class="img-fluid w-100 rounded-top" alt="">
+                                            <img src="{{ product.image.url }}" class="img-fluid w-100 rounded-top" alt="{{ product.name }}">
                                         <div class="product-details">
                                             <a href="#"></a>
                                         </div>
                                     </div>
 
                                     <div class="text-center rounded-bottom p-4">
-                                        <a href="#" class="d-block mb-2">SmartPhone</a>
-                                        <a href="#" class="d-block h4">Apple iPad Mini <br> G2356</a>
-                                        <span class="text-primary fs-5">$1,050.00</span>
+                                        <a href="#" class="d-block mb-2">{{ product.category.name}}</a>
+                                        <a href="{% url 'product_detail' product.id %}" class="d-block h4">{{ product.name }}</a>
+                                        <span class="text-primary fs-5"> {{ product.price }} Kč</span>
                                     </div>
 
                                     <div class="product-item-add border border-top-0 rounded-bottom text-center p-4 pt-0">
@@ -334,6 +335,8 @@
                                 </div>
                             </div>
                         </div>
+                        {% endfor %}
+                        {% comment %} single item {% endcomment %}
                     </div>
                 </div>
             </div>
