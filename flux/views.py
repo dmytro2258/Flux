@@ -1,6 +1,6 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.http import HttpResponse
-from .models import Product, Category
+from .models import Product, Category, Order, OrderItem
 from .cart import Cart
 
 def home(request):
@@ -8,13 +8,28 @@ def home(request):
     context = {'products':products,}
     return render(request, "flux/index.html", context)
 
+
+def checkout(request):
+    cart = Cart(request)
+    if request.method == 'POST':
+        print('Form submitted!')
+        print(request.POST)
+        pass
+    context = {
+        "cart" :cart
+    }
+    
+    return render(request, "flux/checkout.html", context)  
+
+
+
 def add_to_cart(request, pk):
     cart = Cart(request)
     product = get_object_or_404(Product, pk=pk)
     quantity = request.POST.get('quantity', 1)
     cart.add(product=product, quantity=quantity)
     return redirect('home')
-    
+  
 def cart(request):
     cart = Cart(request)
     context = {
@@ -23,8 +38,7 @@ def cart(request):
     
     return render(request, "flux/cart.html", context)
 
-def checkout(request):
-    return render(request, "flux/checkout.html")
+
 
 def cart_delete(request, pk):
     cart = Cart(request)
