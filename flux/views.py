@@ -2,10 +2,20 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.http import HttpResponse
 from .models import Product, Category, Order, OrderItem
 from .cart import Cart
+from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth import login
+from django.contrib.auth.decorators import login_required
 
 def home(request):
+    category_id = request.GET.get('category')
     products = Product.objects.all()
-    context = {'products':products,}
+    categories = Category.objects.all()
+    
+    if category_id:
+        products = products.filter(category_id=category_id)
+    context = {'products':products,
+               'categories': categories}
+    
     return render(request, "flux/index.html", context)
 
 
@@ -25,7 +35,7 @@ def checkout(request):
         zip_code = request.POST.get('zip_code')
         note = request.POST.get('note')
         
-        order = Order.objects.create(
+        order = Order(
             first_name = first_name,
             last_name = last_name,
             email=email,
@@ -36,6 +46,11 @@ def checkout(request):
             zip_code=zip_code,
             note=note
         )
+        
+        if request.user.is_authenticated:
+            order.user = request.user
+        
+        order.save()
         
         for item in cart:
             product = item['product']
@@ -96,3 +111,22 @@ def product_detail(request, pk):
     }
     
     return render(request, "flux/single.html", context)
+
+def signup(request):
+    if request.method == 'POST':
+        form = UserCreationForm(request.POST)
+        if form.is_valid():
+            user = form.save()
+            login(request, user)
+            return redirect('home')
+    else:
+        form = UserCreationForm()
+        
+    context = {'form': form}
+    return render(request, 'flux/signup.html', context)
+
+@login_required
+def user_orders(request):
+    orders = Order.objects.filter(user=request.user).filter(user=request.user).order_by('-created')
+    context = {'orders': orders}
+    return render(request, 'flux/user_orders.html', context)
