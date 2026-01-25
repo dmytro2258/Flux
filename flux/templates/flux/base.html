@@ -4,7 +4,7 @@
 
 <head>
     <meta charset="utf-8">
-    <title>Electro - Electronics Website Template</title>
+    <title>Flux</title>
     <meta content="width=device-width, initial-scale=1.0" name="viewport">
     <meta content="" name="keywords">
     <meta content="" name="description">
@@ -110,24 +110,30 @@
                     </a>
                 </div>
             </div>
+
             <div class="col-md-4 col-lg-6 text-center">
                 <div class="position-relative ps-4">
-                    <div class="d-flex border rounded-pill">
-                        <input class="form-control border-0 rounded-pill w-100 py-3" type="text"
-                            data-bs-target="#dropdownToggle123" placeholder="Search Looking For?">
-                        <button type="button" class="btn btn-primary rounded-pill py-3 px-5" style="border: 0;"><i
-                                class="fas fa-search"></i></button>
-                    </div>
+                    <form action="{% url 'home' %}" method="GET">
+                        <div class="d-flex border rounded-pill">
+                            <input class="form-control border-0 rounded-pill w-100 py-3" type="text" name="q" value="{{request.GET.q}}"
+                                 placeholder="Search Looking For?">
+
+                            <button type="submit" class="btn btn-primary rounded-pill py-3 px-5" style="border: 0;">
+                                <i class="fas fa-search"></i>
+                            </button>
+                        </div>
+                    </form>
                 </div>
             </div>
             <div class="col-md-4 col-lg-3 text-center text-lg-end">
                 <div class="d-inline-flex align-items-center">
-    
-                    <a href="#" class="text-muted d-flex align-items-center justify-content-center me-3">
-                        <span class="rounded-circle btn-md-square border">
-                            <i class="fas fa-random"></i>
-                        </span> 
-                    </a>
+                    {% if user.is_authenticated %}
+                        <a href="{% url 'user_orders' %}" class="text-muted d-flex align-items-center justify-content-center me-3">
+                            <span class="rounded-circle btn-md-square border">
+                                <i class="fas fa-shopping-bag"></i>
+                            </span> 
+                        </a>
+                    {% endif %}
                     <a href="#" class="text-muted d-flex align-items-center justify-content-center me-3">
                         <span class="rounded-circle btn-md-square border">
                             <i class="fas fa-heart"></i>
@@ -137,7 +143,7 @@
                         <span class="rounded-circle btn-md-square border">
                             <i class="fas fa-shopping-cart"></i>
                         </span>
-                        <span class="text-dark ms-2">$0.00</span>
+                        <span class="text-dark ms-2">${{ cart.get_total_price }}</span>
                     </a>
                 </div>
             </div>
@@ -161,7 +167,7 @@
                                 {% for category in categories %}
                                     <li>
                                         <div class="categories-bars-item">
-                                            <a href="#">{{category.name}}</a>
+                                            <a href="{% url 'home' %}?category={{category.id}}" >{{category.name}}</a>
                                             <span>{{ category.product_set.count}}</span>
                                         </div>
                                     </li>
@@ -188,46 +194,10 @@
                             <a href="{% url 'home' %}" class="nav-item nav-link active">Home</a>
                             <a href="shop.html" class="nav-item nav-link">About us</a>
                             <a href="single.html" class="nav-item nav-link">Single Page</a>
-                            
-                            </div>
+                        </div>
                             <a href="contact.html" class="nav-item nav-link me-2">Contact</a>
-                            <div class="nav-item dropdown d-block d-lg-none mb-3">
-                                <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">All Category</a>
-                                <div class="dropdown-menu m-0">
-                                    <ul class="list-unstyled categories-bars">
-                                        <li>
-                                            <div class="categories-bars-item">
-                                                <a href="#">Accessories</a>
-                                                <span>(3)</span>
-                                            </div>
-                                        </li>
-                                        <li>
-                                            <div class="categories-bars-item">
-                                                <a href="#">Electronics & Computer</a>
-                                                <span>(5)</span>
-                                            </div>
-                                        </li>
-                                        <li>
-                                            <div class="categories-bars-item">
-                                                <a href="#">Laptops & Desktops</a>
-                                                <span>(2)</span>
-                                            </div>
-                                        </li>
-                                        <li>
-                                            <div class="categories-bars-item">
-                                                <a href="#">Mobiles & Tablets</a>
-                                                <span>(8)</span>
-                                            </div>
-                                        </li>
-                                        <li>
-                                            <div class="categories-bars-item">
-                                                <a href="#">SmartPhone & Smart TV</a>
-                                                <span>(5)</span>
-                                            </div>
-                                        </li>
-                                    </ul>
-                                </div>
-                            </div>
+
+
                         </div>
                         <a href="" class="btn btn-secondary rounded-pill py-2 px-4 px-lg-3 mb-3 mb-md-3 mb-lg-0"><i
                                 class="fa fa-mobile-alt me-2"></i> +0123 456 7890</a>

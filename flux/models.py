@@ -45,6 +45,10 @@ class Order(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     paid = models.BooleanField(default=False)
     
+    shipping_method = models.CharField(max_length=100, default="Standard")
+    shipping_cost = models.DecimalField(max_digits=10, decimal_places=2, default="0.00")
+    payment_method = models.CharField(max_length=100,default="Direcrt Bank Transfer")
+    
     def __str__(self):
         return f"Order {self.id} - {self.first_name} {self.last_name}"
     

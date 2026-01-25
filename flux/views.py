@@ -5,14 +5,19 @@ from .cart import Cart
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
+from django.db.models import Q #complex search module
 
 def home(request):
     category_id = request.GET.get('category')
     products = Product.objects.all()
     categories = Category.objects.all()
+    query = request.GET.get('q')
     
     if category_id:
         products = products.filter(category_id=category_id)
+    if query:
+        products = products.filter(Q(name__icontains=query) | Q(description__icontains=query))   
+        
     context = {'products':products,
                'categories': categories}
     
@@ -34,6 +39,16 @@ def checkout(request):
         country = request.POST.get('country')
         zip_code = request.POST.get('zip_code')
         note = request.POST.get('note')
+        shipping_method = request.POST.get('shipping_option')
+        payment_method = request.POST.get('payment_method')
+        
+        shipping_cost = 0
+        if shipping_method == 'Pickup':
+            shipping_cost = 3.00
+        elif shipping_method == "Standard":
+            shipping_cost = 5.00
+        elif shipping_method == "Local":
+            shipping_cost = 1.00
         
         order = Order(
             first_name = first_name,
@@ -44,7 +59,10 @@ def checkout(request):
             city=city,
             country=country,
             zip_code=zip_code,
-            note=note
+            note=note,
+            shipping_method = shipping_method,
+            shipping_cost = shipping_cost,
+            payment_method = payment_method,
         )
         
         if request.user.is_authenticated:

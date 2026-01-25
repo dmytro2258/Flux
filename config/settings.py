@@ -63,6 +63,7 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
                 'flux.context_processors.categories',
+                'flux.context_processors.cart',
             ],
         },
     },

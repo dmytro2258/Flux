@@ -32,7 +32,7 @@
                             {% for category in categories%}
                             <li>
                                 <div class="categories-item">
-                                    <a href="#" class="text-dark"><i class="fas fa-apple-alt text-secondary me-2"></i>
+                                    <a href="{% url 'home' %}?category={{ category.id }}" class="text-dark"><i class="fas fa-apple-alt text-secondary me-2"></i>
                                         {{category.name}}</a>
                                     <span>({{ category.product_set.count }})</span>
                                 </div>
