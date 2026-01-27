@@ -37,10 +37,10 @@
                                 <div class="product-item-inner border rounded h-100 d-flex flex-column">
 
                                     <div class="product-item-inner-item">
+                                        <a href="{% url 'product_detail' product.id %}" class="d-block overflow-hidden">
                                             <img src="{{ product.image.url }}" class="img-fluid w-100 rounded-top" alt="{{ product.name }}">
-                                        <div class="product-details">
-                                            <a href="#"></a>
-                                        </div>
+                                        </a>    
+                                        
                                     </div>
 
                                     <div class="text-center rounded-bottom p-4">

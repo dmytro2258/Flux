@@ -640,7 +640,8 @@
 
 
 /*** Single Products Start ***/
-.single-product .owl-nav .owl-prev,
+
+.product .owl-nav .owl-prev,
 .single-product .owl-nav .owl-next {
     position: absolute;
     top: 50%;
@@ -684,18 +685,6 @@
     border-radius: 40px;
     border: 4px solid var(--bs-secondary);
 }
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 .related-product .related-carousel .related-item {
