@@ -6,6 +6,9 @@ from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q #complex search module
+import qrcode
+import base64
+from io import BytesIO
 
 def home(request):
     category_id = request.GET.get('category')
@@ -26,7 +29,7 @@ def home(request):
 
 def checkout(request):
     cart = Cart(request)
-    if len(cart) ==0:
+    if len(cart) == 0:
         return redirect('home')
     
     if request.method == 'POST':
@@ -41,6 +44,7 @@ def checkout(request):
         note = request.POST.get('note')
         shipping_method = request.POST.get('shipping_option')
         payment_method = request.POST.get('payment_method')
+               
         
         shipping_cost = 0
         if shipping_method == 'Pickup':
@@ -49,7 +53,24 @@ def checkout(request):
             shipping_cost = 5.00
         elif shipping_method == "Local":
             shipping_cost = 1.00
+            
+        cart_total = float(cart.get_total_price())
+        grand_total = cart_total + shipping_cost
         
+        qr_code_base64 = None 
+        
+            
+        if payment_method == "Direct Bank Transfer":
+            iban = "CZ7406000000000264070125"
+            qr_data = f"SPD*1.0*ACC:{iban}*AM:{grand_total:.2f}*CC:CZK*MSG:ElectroShopTest"
+            qr = qrcode.QRCode(version=1, box_size=8, border=2)
+            qr.add_data(qr_data)
+            qr.make(fit=True)
+            img = qr.make_image(fill_color="black", back_color='white')
+            buffer = BytesIO()
+            img.save(buffer, format="PNG")
+            qr_code_base64 = base64.b64encode(buffer.getvalue()).decode('utf-8')
+            
         order = Order(
             first_name = first_name,
             last_name = last_name,
@@ -84,11 +105,18 @@ def checkout(request):
         
         cart.clear()
         
-        return render(request, 'flux/success.html')
+        success_context = {
+            "qr_code" : qr_code_base64,
+            "grand_total" : grand_total
+        }
+        
+        
+        return render(request, 'flux/success.html', success_context)
     
     
     context = {
-        "cart" :cart
+        "cart" :cart,
+        
     }
     
     return render(request, "flux/checkout.html", context)  

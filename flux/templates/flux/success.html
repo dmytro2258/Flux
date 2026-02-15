@@ -1,13 +1,32 @@
 {% extends "flux/base.html" %}
 {% load static %}
 
-
 {% block content %}
+<div class="container-fluid py-5 mt-5 text-center">
+    <div class="container py-5">
+        
+        <h1 class="display-4 text-success mb-4"><i class="fas fa-check-circle"></i> Order Placed Successfully!</h1>
+        <p class="fs-4">Thank you for your purchase.</p>
 
-    <div class="container text-center py-5">
-        <h1 class="text-success display-1"><i class="fa fa-check-circle"></i></h1>
-        <h1 class="mb-4">Thank You!</h1>
-        <p class="lead">Your order has been placed successfully.</p>
-        <a href="{% url 'home' %}" class="btn btn-primary btn-lg rounded-pill mt-3">Back to Shop</a>
+        <hr class="my-5 w-50 mx-auto">
+
+        {% if qr_code %}
+            <div class="bg-light p-5 rounded shadow-sm d-inline-block">
+                <h3 class="mb-3 text-dark">Scan to Pay via Bank Transfer</h3>
+                
+                <img src="data:image/png;base64,{{ qr_code }}" alt="Payment QR Code" class="img-fluid border border-dark rounded p-2 bg-white" style="max-width: 250px;">
+                
+                <p class="text-muted mt-3 fs-5">
+                    Total Amount: <strong class="text-dark">${{ grand_total|floatformat:2 }}</strong>
+                </p>
+                <p class="text-muted">Open your banking app and scan this code to complete your payment.</p>
+            </div>
+        {% endif %}
+        
+        <div class="mt-5">
+            <a href="{% url 'home' %}" class="btn btn-primary rounded-pill py-3 px-5 text-uppercase">Continue Shopping</a>
+        </div>
+
     </div>
+</div>
 {% endblock %}
