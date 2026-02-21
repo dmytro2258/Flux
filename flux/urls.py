@@ -14,4 +14,6 @@ urlpatterns = [
     path('logout/', auth_views.LogoutView.as_view(next_page='home'), name='logout'),
     path('signup/', views.signup, name='signup'),
     path('my-orders/', views.user_orders, name='user_orders'),
+    path('account/', views.my_account, name='my_account'),
+    path('download_invoice/<int:order_id>/', views.download_invoice, name='download_invoice'),
 ]

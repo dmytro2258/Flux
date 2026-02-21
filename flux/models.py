@@ -1,6 +1,20 @@
 from django.db import models
 from django.contrib.auth.models import User
 
+class StoreSettings(models.Model):
+    send_pdf_email = models.BooleanField(default=False, help_text="Automatically send an email with the PDF invoice after chekcout.")
+    allow_pdf_download = models.BooleanField(default=False, help_text="Show the 'Download Invoice' button on the sucess page.")
+    
+    class Meta:
+        verbose_name_plural = "Store Settings"
+    
+    def save(self, *args, **kwargs):
+        self.pk = 1
+        super(StoreSettings, self).save(*args, **kwargs)
+        
+    def __str__(self):
+        return "Store Global Settings"
+
 class Category(models.Model):
     name = models.CharField(max_length=100)
     
@@ -64,3 +78,5 @@ class OrderItem(models.Model):
     
     def get_total_price(self):
         return self.price * self.quantity
+    
+    

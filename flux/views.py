@@ -1,6 +1,6 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.http import HttpResponse
-from .models import Product, Category, Order, OrderItem
+from .models import Product, Category, Order, OrderItem, StoreSettings
 from .cart import Cart
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth import login
@@ -9,6 +9,13 @@ from django.db.models import Q #complex search module
 import qrcode
 import base64
 from io import BytesIO
+import logging
+from django.contrib import messages
+from django.template.loader import get_template
+from xhtml2pdf import pisa
+from django.core.mail import EmailMessage
+
+logger = logging.getLogger('flux')
 
 def home(request):
     category_id = request.GET.get('category')
@@ -90,6 +97,7 @@ def checkout(request):
             order.user = request.user
         
         order.save()
+        logger.info(f"New order created: #{order.id} | Customer: {first_name} {last_name} | Total: ${grand_total:.2f}")
         
         for item in cart:
             product = item['product']
@@ -105,9 +113,39 @@ def checkout(request):
         
         cart.clear()
         
+        store_settings, created = StoreSettings.objects.get_or_create(pk=1)
+        if store_settings.send_pdf_email:
+            try:
+                items = OrderItem.objects.filter(order=order)
+                template = get_template('flux/invoice_pdf.html')
+                pdf_context = {'order': order, 'items': items, 'grand_total': grand_total}
+                html = template.render(pdf_context)
+                
+                result = BytesIO()
+                pdf = pisa.pisaDocument(BytesIO(html.encode("UTF-8")), result)
+                if not pdf.err:
+                    email_subject = f"Order Confirmation - #{order.id}"
+                    email_body = f"Hello {first_name},\n\nThank you for your order! Your total is ${grand_total:.2f}. Please find your invoice attached.\n\nBest,\nElectro Shop"
+                    
+                    email = EmailMessage(
+                        subject=email_subject,
+                        body=email_body,
+                        from_email='noreply@electroshop.com',
+                        to=[email], 
+                    )
+                    email.attach(f'Invoice_Order_{order.id}.pdf', result.getvalue(), 'application/pdf')
+                    email.send()
+                    logger.info(f"Email sent for Order #{order.id}")
+            except Exception as e:
+                logger.error(f"Failed to generate/send PDF email: {e}")
+                
+        
         success_context = {
             "qr_code" : qr_code_base64,
-            "grand_total" : grand_total
+            "grand_total" : grand_total,
+            "payment_method" : payment_method,
+            "order" : order,
+            "allow_pdf_download" : store_settings.allow_pdf_download,
         }
         
         
@@ -164,6 +202,7 @@ def signup(request):
         if form.is_valid():
             user = form.save()
             login(request, user)
+            logger.info(f"New user registered: {user.username}")
             return redirect('home')
     else:
         form = UserCreationForm()
@@ -176,3 +215,61 @@ def user_orders(request):
     orders = Order.objects.filter(user=request.user).filter(user=request.user).order_by('-created')
     context = {'orders': orders}
     return render(request, 'flux/user_orders.html', context)
+
+@login_required(login_url='login')
+def my_account(request):
+    if request.method == "POST":
+        action = request.POST.get('action')
+        if action == 'update_profile':
+            user = request.user
+            user.first_name = request.POST.get('first_name')
+            user.last_name = request.POST.get('last_name')
+            user.email = request.POST.get('email')
+            user.save()
+            
+            logger.info(f"Account updated: User '{user.username} changed their profile info.")
+            messages.success(request, "Your profile has been updated successfully!")
+            
+            return redirect('my_account')
+        
+        elif action == 'delete_account':
+            user = request.user
+            username = user.username
+            
+            user.delete()
+            
+            logger.warning(f"Account deletteed: User '{username} permanently deleted their account.")
+            messages.error(request, "Your account has been permanently deleted.")
+            
+            return redirect('home')
+            
+    return render(request, 'flux/account.html')
+
+def download_invoice(request, order_id):
+    order = Order.objects.get(id=order_id)
+    items = OrderItem.objects.filter(order=order)
+    
+    for item in items:
+        item.total_price = item.price * item.quantity
+    
+    cart_total = sum(item.total_price for item in items)
+    grand_total = float(cart_total) + float(order.shipping_cost)
+    
+    context = {
+        'order' : order,
+        'items' : items,
+        'grand_total' : grand_total,
+    }
+    
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-disposition'] = f'attachment; filename="Invoice_order_{order.id}.pdf"'
+    
+    template = get_template('flux/invoice_pdf.html')
+    html = template.render(context)
+    pisa_status = pisa.CreatePDF(html, dest=response)
+    
+    if pisa_status.err:
+        return HttpResponse('We had some errors')
+    
+    logger.info(f"PDF Invoice downloaded for Order {order.id}")
+    return response

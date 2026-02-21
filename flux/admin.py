@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Category, Product, ProductImage, Order, OrderItem
+from .models import Category, Product, ProductImage, Order, OrderItem, StoreSettings
 
 class ProductImageInline(admin.TabularInline):
     model = ProductImage
@@ -19,6 +19,7 @@ class OrderAdmin(admin.ModelAdmin):
     list_filter = ('paid', 'created')
     inlines = [OrderItemInline] 
 
+admin.site.register(StoreSettings)
 admin.site.register(Order, OrderAdmin)
 admin.site.register(OrderItem)
 admin.site.register(Category)
