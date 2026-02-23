@@ -273,3 +273,14 @@ def download_invoice(request, order_id):
     
     logger.info(f"PDF Invoice downloaded for Order {order.id}")
     return response
+
+def contact(request):
+
+    return render(request, 'flux/contact.html')
+
+def about(request):
+
+    return render(request, 'flux/about.html')
+
+def custom_404(request, exception):
+    return render(request, 'flux/404.html', status=404)
