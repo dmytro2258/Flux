@@ -289,25 +289,6 @@
 
 
 
-.product .product-item .product-item-inner .product-item-inner-item .product-details a i {
-    width: 50px; 
-    height: 50px;
-    border-radius: 50px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: var(--bs-primary);
-    color: var(--bs-white);
-    transition: 0.5s;
-}
-
-.product .product-item:hover .product-item-inner .product-item-inner-item .product-details a i:hover {
-    background: var(--bs-secondary);
-    color: var(--bs-white);
-}
-
-
-
 .product .tab-class .nav .nav-item a.active {
     background: var(--bs-primary) !important;
 }
