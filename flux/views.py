@@ -1,11 +1,11 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.http import HttpResponse
-from .models import Product, Category, Order, OrderItem, StoreSettings
+from .models import Product, Category, Order, OrderItem, StoreSettings, UserProfile
 from .cart import Cart
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
-from django.db.models import Q #complex search module
+from django.db.models import Q  # complex search module
 import qrcode
 import base64
 from io import BytesIO
@@ -14,73 +14,117 @@ from django.contrib import messages
 from django.template.loader import get_template
 from xhtml2pdf import pisa
 from django.core.mail import EmailMessage
+from django.contrib.auth.models import User
 
-logger = logging.getLogger('flux')
+logger = logging.getLogger("flux")
+
 
 def home(request):
-    category_id = request.GET.get('category')
+    category_id = request.GET.get("category")
     products = Product.objects.all()
     categories = Category.objects.all()
-    query = request.GET.get('q')
-    
+    query = request.GET.get("q")
+
     if category_id:
         products = products.filter(category_id=category_id)
     if query:
-        products = products.filter(Q(name__icontains=query) | Q(description__icontains=query))   
-        
-    context = {'products':products,
-               'categories': categories}
-    
+        products = products.filter(
+            Q(name__icontains=query) | Q(description__icontains=query)
+        )
+
+    context = {"products": products, "categories": categories}
+
     return render(request, "flux/index.html", context)
 
 
 def checkout(request):
     cart = Cart(request)
     if len(cart) == 0:
-        return redirect('home')
-    
-    if request.method == 'POST':
-        first_name = request.POST.get('first_name')
-        last_name = request.POST.get('last_name')
-        email = request.POST.get('email')
-        mobile = request.POST.get('mobile')
-        address = request.POST.get('address')
-        city = request.POST.get('city')
-        country = request.POST.get('country')
-        zip_code = request.POST.get('zip_code')
-        note = request.POST.get('note')
-        shipping_method = request.POST.get('shipping_option')
-        payment_method = request.POST.get('payment_method')
-               
-        
+        return redirect("home")
+
+    if request.method == "POST":
+        first_name = request.POST.get("first_name")
+        last_name = request.POST.get("last_name")
+        email = request.POST.get("email")
+        mobile = request.POST.get("mobile")
+        address = request.POST.get("address")
+        city = request.POST.get("city")
+        country = request.POST.get("country")
+        zip_code = request.POST.get("zip_code")
+        note = request.POST.get("note")
+        shipping_method = request.POST.get("shipping_option")
+        payment_method = request.POST.get("payment_method")
+
+        order_user = None
+        if request.user.is_authenticated:
+            order_user = request.user
+
+        save_info = request.POST.get("save_info")
+
+        if save_info == "1":
+            if not request.user.is_authenticated:
+                if not User.objects.filter(username=email).exists():
+                    new_user = User.objects.create_user(
+                        username=email,
+                        email=email,
+                        password="FluxPassword123!",
+                        first_name=first_name,
+                        last_name=last_name,
+                    )
+                    order_user = new_user
+
+                    UserProfile.objects.create(
+                        user=new_user,
+                        mobile=mobile,
+                        address=address,
+                        city=city,
+                        country=country,
+                        zip_code=zip_code,
+                    )
+                    login(request, new_user)
+                    logger.info(f"Guest created new account at checkout: {email}")
+
+            elif request.user.is_authenticated:
+                profile, created = UserProfile.objects.get_or_create(user=request.user)
+                profile.mobile = mobile
+                profile.address = address
+                profile.city = city
+                profile.country = country
+                profile.zip_code = zip_code
+                profile.save()
+                logger.info(
+                    f"User {request.user.username} updated their saved shipping info."
+                )
+
         shipping_cost = 0
-        if shipping_method == 'Pickup':
+        if shipping_method == "Pickup":
             shipping_cost = 3.00
         elif shipping_method == "Standard":
             shipping_cost = 5.00
         elif shipping_method == "Local":
             shipping_cost = 1.00
-            
+
         cart_total = float(cart.get_total_price())
         grand_total = cart_total + shipping_cost
-        
-        qr_code_base64 = None 
-        
-            
+
+        qr_code_base64 = None
+
         if payment_method == "Direct Bank Transfer":
             iban = "CZ7406000000000264070125"
-            qr_data = f"SPD*1.0*ACC:{iban}*AM:{grand_total:.2f}*CC:CZK*MSG:ElectroShopTest"
+            qr_data = (
+                f"SPD*1.0*ACC:{iban}*AM:{grand_total:.2f}*CC:CZK*MSG:ElectroShopTest"
+            )
             qr = qrcode.QRCode(version=1, box_size=8, border=2)
             qr.add_data(qr_data)
             qr.make(fit=True)
-            img = qr.make_image(fill_color="black", back_color='white')
+            img = qr.make_image(fill_color="black", back_color="white")
             buffer = BytesIO()
             img.save(buffer, format="PNG")
-            qr_code_base64 = base64.b64encode(buffer.getvalue()).decode('utf-8')
-            
+            qr_code_base64 = base64.b64encode(buffer.getvalue()).decode("utf-8")
+
         order = Order(
-            first_name = first_name,
-            last_name = last_name,
+            first_name=first_name,
+            last_name=last_name,
             email=email,
             mobile=mobile,
             address=address,
@@ -88,199 +132,217 @@ def checkout(request):
             country=country,
             zip_code=zip_code,
             note=note,
-            shipping_method = shipping_method,
-            shipping_cost = shipping_cost,
-            payment_method = payment_method,
+            shipping_method=shipping_method,
+            shipping_cost=shipping_cost,
+            payment_method=payment_method,
+            user=order_user,
         )
-        
-        if request.user.is_authenticated:
-            order.user = request.user
-        
+
+
         order.save()
-        logger.info(f"New order created: #{order.id} | Customer: {first_name} {last_name} | Total: ${grand_total:.2f}")
-        
+        logger.info(
+            f"New order created: #{order.id} | Customer: {first_name} {last_name} | Total: ${grand_total:.2f}"
+        )
+
         for item in cart:
-            product = item['product']
-            quantity = int(item['quantity'])
-            price = item['price']
-            
+            product = item["product"]
+            quantity = int(item["quantity"])
+            price = item["price"]
+
             OrderItem.objects.create(
-                order = order,
-                product = product,
-                price = price,
-                quantity = quantity,
+                order=order,
+                product=product,
+                price=price,
+                quantity=quantity,
             )
-        
+
         cart.clear()
-        
+
         store_settings, created = StoreSettings.objects.get_or_create(pk=1)
         if store_settings.send_pdf_email:
             try:
                 items = OrderItem.objects.filter(order=order)
-                template = get_template('flux/invoice_pdf.html')
-                pdf_context = {'order': order, 'items': items, 'grand_total': grand_total}
+                template = get_template("flux/invoice_pdf.html")
+                pdf_context = {
+                    "order": order,
+                    "items": items,
+                    "grand_total": grand_total,
+                }
                 html = template.render(pdf_context)
-                
+
                 result = BytesIO()
                 pdf = pisa.pisaDocument(BytesIO(html.encode("UTF-8")), result)
                 if not pdf.err:
                     email_subject = f"Order Confirmation - #{order.id}"
                     email_body = f"Hello {first_name},\n\nThank you for your order! Your total is ${grand_total:.2f}. Please find your invoice attached.\n\nBest,\nElectro Shop"
-                    
+
                     email = EmailMessage(
                         subject=email_subject,
                         body=email_body,
-                        from_email='noreply@electroshop.com',
-                        to=[email], 
+                        from_email="noreply@electroshop.com",
+                        to=[email],
                     )
-                    email.attach(f'Invoice_Order_{order.id}.pdf', result.getvalue(), 'application/pdf')
+                    email.attach(
+                        f"Invoice_Order_{order.id}.pdf",
+                        result.getvalue(),
+                        "application/pdf",
+                    )
                     email.send()
                     logger.info(f"Email sent for Order #{order.id}")
             except Exception as e:
                 logger.error(f"Failed to generate/send PDF email: {e}")
-                
-        
-        success_context = {
-            "qr_code" : qr_code_base64,
-            "grand_total" : grand_total,
-            "payment_method" : payment_method,
-            "order" : order,
-            "allow_pdf_download" : store_settings.allow_pdf_download,
-        }
-        
-        
-        return render(request, 'flux/success.html', success_context)
-    
-    
-    context = {
-        "cart" :cart,
-        
-    }
-    
-    return render(request, "flux/checkout.html", context)  
 
+        success_context = {
+            "qr_code": qr_code_base64,
+            "grand_total": grand_total,
+            "payment_method": payment_method,
+            "order": order,
+            "allow_pdf_download": store_settings.allow_pdf_download,
+        }
+
+        return render(request, "flux/success.html", success_context)
+
+    context = {
+        "cart": cart,
+    }
+
+    return render(request, "flux/checkout.html", context)
 
 
 def add_to_cart(request, pk):
     cart = Cart(request)
     product = get_object_or_404(Product, pk=pk)
-    quantity = request.POST.get('quantity', 1)
+    quantity = request.POST.get("quantity", 1)
     cart.add(product=product, quantity=quantity)
-    return redirect('home')
-  
+    return redirect("home")
+
+
 def cart(request):
     cart = Cart(request)
-    context = {
-        "cart": cart
-    }
-    
-    return render(request, "flux/cart.html", context)
+    context = {"cart": cart}
 
+    return render(request, "flux/cart.html", context)
 
 
 def cart_delete(request, pk):
     cart = Cart(request)
     product = get_object_or_404(Product, pk=pk)
     cart.delete(product=product)
-    return redirect('cart')
-
+    return redirect("cart")
 
 
 def product_detail(request, pk):
-    product = get_object_or_404(Product,pk=pk)
+    product = get_object_or_404(Product, pk=pk)
     categories = Category.objects.all()
-    context= {
-        'product' : product,
-        'categories' : categories,
+    context = {
+        "product": product,
+        "categories": categories,
     }
-    
+
     return render(request, "flux/single.html", context)
 
+
 def signup(request):
-    if request.method == 'POST':
+    if request.method == "POST":
         form = UserCreationForm(request.POST)
         if form.is_valid():
             user = form.save()
             login(request, user)
             logger.info(f"New user registered: {user.username}")
-            return redirect('home')
+            return redirect("home")
     else:
         form = UserCreationForm()
-        
-    context = {'form': form}
-    return render(request, 'flux/signup.html', context)
+
+    context = {"form": form}
+    return render(request, "flux/signup.html", context)
+
 
 @login_required
 def user_orders(request):
-    orders = Order.objects.filter(user=request.user).filter(user=request.user).order_by('-created')
-    context = {'orders': orders}
-    return render(request, 'flux/user_orders.html', context)
+    orders = (
+        Order.objects.filter(user=request.user)
+        .filter(user=request.user)
+        .order_by("-created")
+    )
+    context = {"orders": orders}
+    return render(request, "flux/user_orders.html", context)
 
-@login_required(login_url='login')
+
+@login_required(login_url="login")
 def my_account(request):
     if request.method == "POST":
-        action = request.POST.get('action')
-        if action == 'update_profile':
+        action = request.POST.get("action")
+        if action == "update_profile":
             user = request.user
-            user.first_name = request.POST.get('first_name')
-            user.last_name = request.POST.get('last_name')
-            user.email = request.POST.get('email')
+            user.first_name = request.POST.get("first_name")
+            user.last_name = request.POST.get("last_name")
+            user.email = request.POST.get("email")
             user.save()
-            
-            logger.info(f"Account updated: User '{user.username} changed their profile info.")
+
+            logger.info(
+                f"Account updated: User '{user.username} changed their profile info."
+            )
             messages.success(request, "Your profile has been updated successfully!")
-            
-            return redirect('my_account')
-        
-        elif action == 'delete_account':
+
+            return redirect("my_account")
+
+        elif action == "delete_account":
             user = request.user
             username = user.username
-            
+
             user.delete()
-            
-            logger.warning(f"Account deletteed: User '{username} permanently deleted their account.")
+
+            logger.warning(
+                f"Account deletteed: User '{username} permanently deleted their account."
+            )
             messages.error(request, "Your account has been permanently deleted.")
-            
-            return redirect('home')
-            
-    return render(request, 'flux/account.html')
+
+            return redirect("home")
+
+    return render(request, "flux/account.html")
+
 
 def download_invoice(request, order_id):
     order = Order.objects.get(id=order_id)
     items = OrderItem.objects.filter(order=order)
-    
+
     for item in items:
         item.total_price = item.price * item.quantity
-    
+
     cart_total = sum(item.total_price for item in items)
     grand_total = float(cart_total) + float(order.shipping_cost)
-    
+
     context = {
-        'order' : order,
-        'items' : items,
-        'grand_total' : grand_total,
+        "order": order,
+        "items": items,
+        "grand_total": grand_total,
     }
-    
-    response = HttpResponse(content_type='application/pdf')
-    response['Content-disposition'] = f'attachment; filename="Invoice_order_{order.id}.pdf"'
-    
-    template = get_template('flux/invoice_pdf.html')
+
+    response = HttpResponse(content_type="application/pdf")
+    response["Content-disposition"] = (
+        f'attachment; filename="Invoice_order_{order.id}.pdf"'
+    )
+
+    template = get_template("flux/invoice_pdf.html")
     html = template.render(context)
     pisa_status = pisa.CreatePDF(html, dest=response)
-    
+
     if pisa_status.err:
-        return HttpResponse('We had some errors')
-    
+        return HttpResponse("We had some errors")
+
     logger.info(f"PDF Invoice downloaded for Order {order.id}")
     return response
 
+
 def contact(request):
 
-    return render(request, 'flux/contact.html')
+    return render(request, "flux/contact.html")
+
 
 def about(request):
 
-    return render(request, 'flux/about.html')
+    return render(request, "flux/about.html")
+
 
 def custom_404(request, exception):
-    return render(request, 'flux/404.html', status=404)
+    return render(request, "flux/404.html", status=404)

@@ -1,6 +1,17 @@
 from django.db import models
 from django.contrib.auth.models import User
 
+class UserProfile(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    mobile = models.CharField(max_length=20, blank=True, null=True)
+    address = models.CharField(max_length=250, blank=True, null=True)
+    city = models.CharField(max_length=100, blank=True, null=True)
+    country = models.CharField(max_length=100, blank=True, null=True)
+    zip_code = models.CharField(max_length=20, blank=True, null=True)
+
+    def __str__(self):
+        return f"{self.user.username}'s Profile"
+
 class StoreSettings(models.Model):
     send_pdf_email = models.BooleanField(default=False, help_text="Automatically send an email with the PDF invoice after chekcout.")
     allow_pdf_download = models.BooleanField(default=False, help_text="Show the 'Download Invoice' button on the sucess page.")
