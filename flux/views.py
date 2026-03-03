@@ -58,33 +58,22 @@ def checkout(request):
         order_user = None
         if request.user.is_authenticated:
             order_user = request.user
-
+        
+        if not request.user.is_authenticated:
+            if User.objects.filter(email=email).exists():
+                messages.error(request, "An account with this email already exists. Please log in to continue.")
+                return redirect("checkout")
+            
         save_info = request.POST.get("save_info")
 
         if save_info == "1":
             if not request.user.is_authenticated:
-                if not User.objects.filter(username=email).exists():
-                    new_user = User.objects.create_user(
-                        username=email,
-                        email=email,
-                        password="FluxPassword123!",
-                        first_name=first_name,
-                        last_name=last_name,
-                    )
-                    order_user = new_user
-
-                    UserProfile.objects.create(
-                        user=new_user,
-                        mobile=mobile,
-                        address=address,
-                        city=city,
-                        country=country,
-                        zip_code=zip_code,
-                    )
-                    login(request, new_user)
-                    logger.info(f"Guest created new account at checkout: {email}")
-
+                # Guest tried to save info -> Throw an error!
+                messages.error(request, "You must log in or create an account to save your information for next time.")
+                return redirect("checkout")
+                
             elif request.user.is_authenticated:
+                # Logged-in user tried to save info -> Save it perfectly!
                 profile, created = UserProfile.objects.get_or_create(user=request.user)
                 profile.mobile = mobile
                 profile.address = address
@@ -92,9 +81,7 @@ def checkout(request):
                 profile.country = country
                 profile.zip_code = zip_code
                 profile.save()
-                logger.info(
-                    f"User {request.user.username} updated their saved shipping info."
-                )
+                logger.info(f"User {request.user.username} updated their saved shipping info.")
 
         shipping_cost = 0
         if shipping_method == "Pickup":
@@ -201,9 +188,16 @@ def checkout(request):
         }
 
         return render(request, "flux/success.html", success_context)
+    profile = None
+    if request.user.is_authenticated:
+        try:
+            profile = UserProfile.objects.get(user=request.user)
+        except UserProfile.DoesNotExist:
+            pass
 
     context = {
         "cart": cart,
+        "profile": profile,
     }
 
     return render(request, "flux/checkout.html", context)
@@ -270,6 +264,8 @@ def user_orders(request):
 
 @login_required(login_url="login")
 def my_account(request):
+    profile, created = UserProfile.objects.get_or_create(user=request.user)
+
     if request.method == "POST":
         action = request.POST.get("action")
         if action == "update_profile":
@@ -278,6 +274,13 @@ def my_account(request):
             user.last_name = request.POST.get("last_name")
             user.email = request.POST.get("email")
             user.save()
+
+            profile.address = request.POST.get("address")
+            profile.city = request.POST.get("city")
+            profile.country = request.POST.get("country")
+            profile.zip_code = request.POST.get("zip_code")
+            profile.mobile = request.POST.get("mobile")
+            profile.save()
 
             logger.info(
                 f"Account updated: User '{user.username} changed their profile info."
@@ -298,8 +301,11 @@ def my_account(request):
             messages.error(request, "Your account has been permanently deleted.")
 
             return redirect("home")
+    context = {
+            "profile":profile,
+        }
 
-    return render(request, "flux/account.html")
+    return render(request, "flux/account.html", context)
 
 
 def download_invoice(request, order_id):

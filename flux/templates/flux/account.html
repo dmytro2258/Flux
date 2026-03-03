@@ -41,6 +41,26 @@
                   <label class="form-label text-muted">Email Address</label>
                   <input type="email" name="email" class="form-control profile-input bg-light" value="{{ request.user.email }}" required readonly />
                 </div>
+                <div class="col-12">
+                  <label class="form-label text-muted">Address</label>
+                  <input type="text" name="address" class="form-control profile-input bg-light" value="{{ profile.address|default_if_none:"" }}" readonly />
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label text-muted">Town/City</label>
+                  <input type="text" name="city" class="form-control profile-input bg-light" value="{{ profile.city|default_if_none:"" }}" readonly />
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label text-muted">Country</label>
+                  <input type="text" name="country" class="form-control profile-input bg-light" value="{{ profile.country|default_if_none:"" }}" readonly />
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label text-muted">Postcode/Zip</label>
+                  <input type="text" name="zip_code" class="form-control profile-input bg-light" value="{{ profile.zip_code|default_if_none:"" }}" readonly />
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label text-muted">Mobile</label>
+                  <input type="tel" name="mobile" class="form-control profile-input bg-light" value="{{ profile.mobile|default_if_none:"" }}" readonly />
+                </div>
 
                 <div class="col-12 mt-4">
                   <input type="hidden" name="action" value="update_profile" />
