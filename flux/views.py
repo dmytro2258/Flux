@@ -64,16 +64,26 @@ def checkout(request):
                 messages.error(request, "An account with this email already exists. Please log in to continue.")
                 return redirect("checkout")
             
+        else: 
+            if User.objects.filter(email=email).exclude(pk=request.user.pk).exists():
+                messages.error(request, "That email is already in use by another account. Please use a different one.")
+                return redirect("checkout")    
+                
         save_info = request.POST.get("save_info")
 
         if save_info == "1":
             if not request.user.is_authenticated:
-                # Guest tried to save info -> Throw an error!
+                # Guest tried to save info = error
                 messages.error(request, "You must log in or create an account to save your information for next time.")
                 return redirect("checkout")
-                
-            elif request.user.is_authenticated:
-                # Logged-in user tried to save info -> Save it perfectly!
+            else:
+                # Logged-in user tried to save info = save
+                user = request.user
+                user.first_name = first_name
+                user.last_name = last_name
+                user.email = email
+                user.save()
+
                 profile, created = UserProfile.objects.get_or_create(user=request.user)
                 profile.mobile = mobile
                 profile.address = address
