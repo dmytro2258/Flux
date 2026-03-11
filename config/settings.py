@@ -150,7 +150,6 @@ LOGGING = {
             'class' : 'logging.FileHandler',
             'filename' : BASE_DIR/ 'shop_activity.log',
             'formatter' : 'verbose',
-            'formatter' : 'verbose',
         },
     },
     'loggers' : {

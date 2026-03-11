@@ -13,8 +13,8 @@ class UserProfile(models.Model):
         return f"{self.user.username}'s Profile"
 
 class StoreSettings(models.Model):
-    send_pdf_email = models.BooleanField(default=False, help_text="Automatically send an email with the PDF invoice after chekcout.")
-    allow_pdf_download = models.BooleanField(default=False, help_text="Show the 'Download Invoice' button on the sucess page.")
+    send_pdf_email = models.BooleanField(default=False, help_text="Automatically send an email with the PDF invoice after checkout.")
+    allow_pdf_download = models.BooleanField(default=False, help_text="Show the 'Download Invoice' button on the success page.")
     
     class Meta:
         verbose_name_plural = "Store Settings"
@@ -72,7 +72,7 @@ class Order(models.Model):
     
     shipping_method = models.CharField(max_length=100, default="Standard")
     shipping_cost = models.DecimalField(max_digits=10, decimal_places=2, default="0.00")
-    payment_method = models.CharField(max_length=100,default="Direcrt Bank Transfer")
+    payment_method = models.CharField(max_length=100,default="Direct Bank Transfer")
     
     def __str__(self):
         return f"Order {self.id} - {self.first_name} {self.last_name}"

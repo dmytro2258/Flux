@@ -265,7 +265,6 @@ def signup(request):
 def user_orders(request):
     orders = (
         Order.objects.filter(user=request.user)
-        .filter(user=request.user)
         .order_by("-created")
     )
     context = {"orders": orders}
@@ -305,9 +304,7 @@ def my_account(request):
 
             user.delete()
 
-            logger.warning(
-                f"Account deletteed: User '{username} permanently deleted their account."
-            )
+            logger.warning(f"Account deleted: User '{username}' permanently deleted their account.")
             messages.error(request, "Your account has been permanently deleted.")
 
             return redirect("home")
