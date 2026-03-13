@@ -40,38 +40,21 @@
     <div class="container-fluid px-5 d-none border-bottom d-lg-block">
         <div class="row gx-0 align-items-center">
             <div class="col-lg-4 text-center text-lg-start mb-lg-0">
-                <div class="d-inline-flex align-items-center" style="height: 45px;">
-                    <a href="#" class="text-muted me-2"> Help</a><small> / </small>
-                    <a href="#" class="text-muted mx-2"> Support</a><small> / </small>
-                    <a href="#" class="text-muted ms-2"> Contact</a>
-
+                <div class="d-inline-flex align-items-center text-muted" style="height: 45px;">
+                    <span class="me-3"><i class="far fa-clock text-primary me-2"></i>Mon-Fri: 9:00 - 18:00</span>
+                    <small class="text-muted">|</small>
+                    <span class="ms-3"><i class="fas fa-bolt text-primary me-2"></i>Premium Electronics in Prague</span>
                 </div>
             </div>
             <div class="col-lg-4 text-center d-flex align-items-center justify-content-center">
                 <small class="text-dark">Call Us:</small>
-                <a href="#" class="text-muted">(+012) 1234 567890</a>
+                <a href="#" class="text-muted"> +420 800 123 456</a>
             </div>
 
             <div class="col-lg-4 text-center text-lg-end">
                 <div class="d-inline-flex align-items-center" style="height: 45px;">
-                    <div class="dropdown">
-                        <a href="#" class="dropdown-toggle text-muted me-2" data-bs-toggle="dropdown"><small>
-                                USD</small></a>
-                        <div class="dropdown-menu rounded">
-                            <a href="#" class="dropdown-item"> Euro</a>
-                            <a href="#" class="dropdown-item"> Dolar</a>
-                        </div>
-                    </div>
-                    <div class="dropdown">
-                        <a href="#" class="dropdown-toggle text-muted mx-2" data-bs-toggle="dropdown"><small>
-                                English</small></a>
-                        <div class="dropdown-menu rounded">
-                            <a href="#" class="dropdown-item"> English</a>
-                            <a href="#" class="dropdown-item"> Turkish</a>
-                            <a href="#" class="dropdown-item"> Spanol</a>
-                            <a href="#" class="dropdown-item"> Italiano</a>
-                        </div>
-                    </div>
+                    
+                    
                     <div class="dropdown">
                         <a href="#" class="dropdown-toggle text-muted ms-2" data-bs-toggle="dropdown"><small><i
                                     class="fa fa-home me-2"></i>
@@ -135,11 +118,6 @@
                             </span> 
                         </a>
                     {% endif %}
-                    <a href="#" class="text-muted d-flex align-items-center justify-content-center me-3">
-                        <span class="rounded-circle btn-md-square border">
-                            <i class="fas fa-heart"></i>
-                        </span> 
-                    </a>
                     <a href="{% url 'cart'%}" class="text-muted d-flex align-items-center justify-content-center">
                         <span class="rounded-circle btn-md-square border">
                             <i class="fas fa-shopping-cart"></i>
@@ -197,7 +175,7 @@
                             <a href="{% url 'contact' %}" class="nav-item nav-link me-2">Contact</a>
                         </div>
                         <a href="" class="btn btn-secondary rounded-pill py-2 px-4 px-lg-3 mb-3 mb-md-3 mb-lg-0"><i
-                                class="fa fa-mobile-alt me-2"></i> +0123 456 7890</a>
+                                class="fa fa-mobile-alt me-2"></i>+420 800 123 456</a>
                     </div>
                 </nav>
             </div>
@@ -232,7 +210,7 @@
                         </div>
                         <div>
                             <h4 class="text-white">Address</h4>
-                            <p class="mb-2">123 Street New York.USA</p>
+                            <p class="mb-2">Křižíkova 105, 186 00 Prague 8</p>
                         </div>
                     </div>
                 </div>
@@ -244,7 +222,7 @@
                         </div>
                         <div>
                             <h4 class="text-white">Mail Us</h4>
-                            <p class="mb-2">info@example.com</p>
+                            <p class="mb-2">support@electroflux.cz</p>
                         </div>
                     </div>
                 </div>
@@ -256,7 +234,7 @@
                         </div>
                         <div>
                             <h4 class="text-white">Telephone</h4>
-                            <p class="mb-2">(+012) 3456 7890</p>
+                            <p class="mb-2">+420 800 123 456</p>
                         </div>
                     </div>
                 </div>
@@ -267,8 +245,8 @@
                             <i class="fab fa-firefox-browser fa-2x text-primary"></i>
                         </div>
                         <div>
-                            <h4 class="text-white">Yoursite@ex.com</h4>
-                            <p class="mb-2">(+012) 3456 7890</p>
+                            <h4 class="text-white">Website</h4>
+                            <p class="mb-2">www.electroflux.cz</p>
                         </div>
                     </div>
                 </div>
@@ -277,8 +255,6 @@
         </div>
     </div>
     <!-- Footer End -->
-
-
 
 
 

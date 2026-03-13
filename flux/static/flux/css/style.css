@@ -254,7 +254,8 @@
 
 .product .product-item .product-item-inner {
     height: 100%;
-    
+    background: #ffffff;
+    transition: all 0.3s ease-in-out;
 }
 
 .product .product-item .product-item-add {
@@ -268,8 +269,6 @@
 }
 
 
-
-
 .product .product-item .product-item-inner .product-item-inner-item {
     position: relative;
     border-top-right-radius: 10px;
@@ -280,11 +279,21 @@
 
 
 .product .product-item .product-item-inner img {
-    transition: none;
+    height: 250px;
+    width: 100%;
+    object-fit: contain;
+    background-color: #f8f9fa;
+    padding: 15px;
+    transition: opacity 0.3s ease;
+}
+.product .product-item:hover .product-item-inner{
+    transform: translateY(-8px);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.08);
+    border-color: transparent !important;
 }
 
 .product .product-item:hover .product-item-inner img {
-    transform: scale(1.1);
+    opacity: 0.85;
 }
 
 
@@ -336,31 +345,46 @@
     right: 0 !important;
 }
 
+.single-inner img {
+    width: 100%;
+    height: 500px; 
+    object-fit: contain; 
+    background-color: #f8f9fa;
+}
 
 .single-product .single-carousel .owl-dots {
     width: 100%;
-    height: 120px;
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-top: 10px;
+    margin-top: 20px;
     transition: 0.5s;
+    gap: 15px;
+}
+
+.single-product .single-carousel .owl-dots .owl-dot {
+    background: transparent !important;
+    border: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
 }
 
 .single-product .single-carousel .owl-dots .owl-dot img {
-    width: 60px;
-    height: 60px;
-    border-radius: 30px;
-    margin-right: 15px;
-    border: 2px solid var(--bs-primary);
-    transition: 0.5s;
+    width: 70px;
+    height: 80px;
+    object-fit: contain;
+    border-radius: 8px;
+    border: 2px solid transparent;
+    background-color: #f8f9fa;
+    padding: 4px;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
 }
 
-.single-product .single-carousel .owl-dots .owl-dot.active img {
-    width: 80px;
-    height: 80px;
-    border-radius: 40px;
-    border: 4px solid var(--bs-secondary);
+.single-product .single-carousel .owl-dots .owl-dot.active img,
+.single-product .single-carousel .owl-dots .owl-dot:hover img {
+    border-color: var(--bs-secondary);
+    background-color: #ffffff;
 }
 /*** Single Products End ***/
 

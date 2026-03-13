@@ -1,88 +1,69 @@
 {% extends "flux/base.html" %}
 {% load static %}
-
-
 {% block content %}
-
     <!-- Our Products Start -->
     <div class="container-fluid product py-5">
-    <div class="container py-5">
-        <div class="tab-class">
-            <div class="row g-4">
-                <div class="col-lg-4 text-start wow fadeInLeft" data-wow-delay="0.1s">
-                    <h1>Our Products</h1>
+        <div class="container py-5">
+            <div class="tab-class">
+                <div class="row g-4">
+                    <div class="col-lg-4 text-start wow fadeInLeft" data-wow-delay="0.1s">
+                        <h1>Our Products</h1>
+                    </div>
+                    <div class="col-lg-8 text-end wow fadeInRight" data-wow-delay="0.1s">
+                        <ul class="nav nav-pills d-inline-flex text-center mb-5">
+                            {% for category in categories %}
+                                <li class="nav-item mb-4">
+                                    <a class="d-flex mx-2 py-2 bg-light rounded-pill {% if request.GET.category == category.id|stringformat:'s' %}active{% endif %}"
+                                       href="{% if request.GET.category == category.id|stringformat:'s' %}{% url 'home' %}{% else %}{% url 'home' %}?category={{ category.id }}{% endif %}">
+                                        <span class="text-dark" style="width: 130px;">{{ category.name }}</span>
+                                    </a>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
                 </div>
-                <div class="col-lg-8 text-end wow fadeInRight" data-wow-delay="0.1s">
-                    <ul class="nav nav-pills d-inline-flex text-center mb-5">
-                        {% for category in categories %}
-                            <li class="nav-item mb-4">
-                                <a class="d-flex mx-2 py-2 bg-light rounded-pill {% if request.GET.category == category.id|stringformat:'s' %} active{% endif %}"  href="{% if request.GET.category == category.id|stringformat:'s'  %}{% url 'home' %}{% else %}{% url 'home' %}?category={{category.id}}{% endif %}">
-                                    <span class="text-dark" style="width: 130px;">{{category.name }}</span>
-                                </a>
-                            </li>
-                        {% endfor %}
-                    </ul>
-                </div>
-            </div>
-            <div class="tab-content">
-                <div id="tab-1" class="tab-pane fade show p-0 active">
-                    <div class="row g-4">
-                        {% comment %} single item {% endcomment %}
-                        {% for product in products %}
-                        <div class="col-md-6 col-lg-4 col-xl-3">
-                            <div class="product-item rounded wow fadeInUp h-100" data-wow-delay="0.7s">
-
-                                <div class="product-item-inner border rounded h-100 d-flex flex-column">
-
-                                    <div class="product-item-inner-item">
-                                        <a href="{% url 'product_detail' product.id %}" class="d-block overflow-hidden">
-                                            <img src="{{ product.image.url }}" class="img-fluid w-100 rounded-top" alt="{{ product.name }}">
-                                        </a>    
-                                        
-                                    </div>
-
-                                    <div class="text-center rounded-bottom p-4">
-                                        <a href="#" class="d-block mb-2">{{ product.category.name}}</a>
-                                        <a href="{% url 'product_detail' product.id %}" class="d-block h4">{{ product.name }}</a>
-                                        <span class="text-primary fs-5"> {{ product.price }} $</span>
-                                    </div>
-
-                                    <div class="product-item-add border border-top-0 rounded-bottom text-center p-4 pt-0 mt-auto">
-                                        <form action="{% url 'add_to_cart' product.id %}" method="POST" class="d-inline">
-                                            {% csrf_token %}
-                                            <input type="hidden" name="quantity" value="1">
-                                            <button type="submit" class="btn btn-primary border-secondary rounded-pill py-2 px-4 mb-4">
-                                                <i class="fas fa-shopping-cart me-2"> </i> Add To Cart
-                                            </button>
-                                        </form>
-                                        <div class="d-flex justify-content-between align-items-center">
-                                            <div class="d-flex">
-                                                <i class="fas fa-star text-primary"></i>
-                                                <i class="fas fa-star text-primary"></i>
-                                                <i class="fas fa-star text-primary"></i>
-                                                <i class="fas fa-star text-primary"></i>
-                                                <i class="fas fa-star"></i>
+                <div class="tab-content">
+                    <div id="tab-1" class="tab-pane fade show p-0 active">
+                        <div class="row g-4">
+                            {% comment %} single item {% endcomment %}
+                            {% for product in products %}
+                                <div class="col-md-6 col-lg-4 col-xl-3">
+                                    <div class="product-item rounded wow fadeInUp h-100" data-wow-delay="0.7s">
+                                        <div class="product-item-inner border rounded h-100 d-flex flex-column">
+                                            <div class="product-item-inner-item">
+                                                <a href="{% url 'product_detail' product.id %}" class="d-block overflow-hidden">
+                                                    <img src="{{ product.image.url }}"
+                                                        class="img-fluid w-100 rounded-top"
+                                                        alt="{{ product.name }}">
+                                                </a>
                                             </div>
-                                            <div class="d-flex">
-                                                <a href="#" class="text-primary d-flex align-items-center justify-content-center me-3">
-                                                    <span class="rounded-circle btn-sm-square border"><i class="fas fa-random"></i></i></span>
-                                                </a>
-                                                <a href="#" class="text-primary d-flex align-items-center justify-content-center me-0">
-                                                    <span class="rounded-circle btn-sm-square border"><i class="fas fa-heart"></i></span>
-                                                </a>
+                                            <div class="text-center rounded-bottom p-4">
+                                                <a href="{% if request.GET.category == product.category.id|stringformat:'s' %}{% url 'home' %}{% else %}{% url 'home' %}?category={{ product.category.id }}{% endif %}" class="d-block mb-2">{{ product.category.name }}</a>
+                                                <a href="{% url 'product_detail' product.id %}" class="d-block h4">{{ product.name }}</a>
+                                                <span class="text-primary fs-5">{{ product.price }} $</span>
+                                            </div>
+                                            <div class="product-item-add border border-top-0 rounded-bottom text-center p-4 pt-0 mt-auto">
+                                                <form action="{% url 'add_to_cart' product.id %}"
+                                                      method="POST"
+                                                      class="d-inline">
+                                                    {% csrf_token %}
+                                                    <input type="hidden" name="quantity" value="1">
+                                                    <button type="submit"
+                                                            class="btn btn-primary border-secondary rounded-pill py-2 px-4 mb-4">
+                                                        <i class="fas fa-shopping-cart me-2"> </i> Add To Cart
+                                                    </button>
+                                                </form>
                                             </div>
                                         </div>
-                                    </div>                                  
+                                    </div>
                                 </div>
-                            </div>
+                            {% endfor %}
+                            {% comment %} single item {% endcomment %}
                         </div>
-                        {% endfor %}
-                        {% comment %} single item {% endcomment %}
                     </div>
                 </div>
             </div>
         </div>
     </div>
     <!-- Our Products End -->
-
 {% endblock %}
