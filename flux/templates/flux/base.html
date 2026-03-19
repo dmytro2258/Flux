@@ -173,6 +173,9 @@
                             <a href="{% url 'home' %}" class="nav-item nav-link active">Home</a>
                             <a href="{% url 'about' %}" class="nav-item nav-link">About us</a>
                             <a href="{% url 'contact' %}" class="nav-item nav-link me-2">Contact</a>
+                            {% if user.is_superuser %}
+                                <a href="{% url 'presentation' %}" class="nav-item nav-link me-2">Presentation</a>
+                            {% endif %}
                         </div>
                         <a href="" class="btn btn-secondary rounded-pill py-2 px-4 px-lg-3 mb-3 mb-md-3 mb-lg-0"><i
                                 class="fa fa-mobile-alt me-2"></i>+420 800 123 456</a>
